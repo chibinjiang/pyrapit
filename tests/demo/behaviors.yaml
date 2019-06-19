@@ -1,0 +1,73 @@
+---
+
+behaviors:
+  create_audience_language:
+    docs: "新建 Language"
+    request:
+      url: '/v1/apps/{app}/languages'
+      method: 'POST'
+      data:
+        name: '测试新建Language_{version}'
+        tags: ['{version}']
+        values: [10, 12, 11]
+    response:
+      structure: 'dict'
+      status_code: 200
+
+  create_audience_location:
+    docs: "新建 Location"
+    request:
+      url: '/v1/apps/{app}/locations'
+      method: 'POST'
+      data:
+        name: '测试新建Location_{version}'
+        tags: ['{version}']
+        countries: [95, 232]
+        location_type: 1
+    response:
+      structure: 'dict'
+      status_code: 200
+
+  create_audience_age:
+    docs: "新建 Age"
+    request:
+      url: '/v1/apps/{app}/ages'
+      method: 'POST'
+      data:
+        tags: ['{version}']
+        age_max: 28
+        age_min: 27
+    response:
+      structure: 'dict'
+      status_code: 200
+
+  generate_audience:
+    docs: "叉乘 audience"
+    dependencies: ['create_audience_language', 'create_audience_location', 'create_audience_age']
+    request:
+      url: '/v1/apps/{app}/audiences'
+      method: 'POST'
+      data:
+        name_rule: 'required'
+        tags: ['optional']
+        location_id: ["! create_audience_location.location_id"]
+        age_id: ["!get create_audience_age.age_id"]
+        language_id: ["! create_audience_language.language_id"]
+        gender: ["required"]
+        birthdays:
+        ethnic_affinity:
+    response:
+      structure: 'dict'
+      status_code: 200
+
+  create_audience:
+    docs: "将audience写库"
+    dependencies: ['generate_audience']
+    request:
+      url: '/v1/apps/{app}/audiences'
+      method: 'POST'
+      data:
+        datas: "! generate_audience.audiences"
+    response:
+      structure: 'dict'
+      status_code: 200
